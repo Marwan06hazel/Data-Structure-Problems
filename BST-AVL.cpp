@@ -2,6 +2,8 @@
 #include <algorithm>
 #include <string>
 #include <vector>
+#include <cmath>
+
 using namespace std;
 
 struct Book {
@@ -9,6 +11,10 @@ struct Book {
 	string title;
 	string author;
 };
+
+// ======================================================
+// BST SECTION
+// ======================================================
 
 // node structure
 struct Node {
@@ -36,9 +42,11 @@ Node* search(Node* root, int target, int& steps) {
 	// value found
 	if (root->book.id == target) return root;
 
-	if (target > root->book.id) return search(root->right, target, steps); // search right subtree
+	if (target > root->book.id)
+		return search(root->right, target, steps); // search right subtree
 
-	else return search(root->left, target, steps); // search left subtree
+	else
+		return search(root->left, target, steps); // search left subtree
 }
 
 // BST INSERT
@@ -65,10 +73,12 @@ Node* deleteFunc(Node* root, int target) { // we pass a node pointer, the value 
 	if (root == nullptr) return nullptr;
 
 	// search left subtree
-	if (target < root->book.id) root->left = deleteFunc(root->left, target);
+	if (target < root->book.id)
+		root->left = deleteFunc(root->left, target);
 
 	// search right subtree
-	else if (target > root->book.id) root->right = deleteFunc(root->right, target);
+	else if (target > root->book.id)
+		root->right = deleteFunc(root->right, target);
 
 	// if target found 
 	else {   // this's implemented after the recursion during the searching for the target node, now the root represents the node to be really deleted
@@ -117,13 +127,15 @@ Node* deleteFunc(Node* root, int target) { // we pass a node pointer, the value 
 // BST INORDER
 void inOrder(Node* root) {
 
-	if (root == nullptr) return; // if tree/subtree is empty -> storp recursion
+	if (root == nullptr) return; // if tree/subtree is empty -> stop recursion
 
 	inOrder(root->left);  // go to the left subtree & keep go deeply 
 
-	cout << root->book.id << " " << root->book.title << " " << root->book.author << endl; // print the node (recursively bottom to top)
+	cout << "ID: " << root->book.id
+		<< ", Title: " << root->book.title
+		<< ", Author: " << root->book.author << endl;
 
-	inOrder(root->right); // after printing the node (go to its right and keep recustion)
+	inOrder(root->right); // after printing the node (go to its right and keep recursion)
 }
 
 // BST HEIGHT
@@ -136,6 +148,49 @@ int heightBST(Node* root) {
 
 	return 1 + max(leftHeight, rightHeight);
 }
+
+// BST RANGE SEARCH
+void findInRangeBST(Node* root, int low, int high) {
+
+	if (root == nullptr) return;
+
+	if (root->book.id > low) {
+		findInRangeBST(root->left, low, high);
+	}
+
+	if (root->book.id >= low && root->book.id <= high) {
+
+		cout << "ID: " << root->book.id
+			<< ", Title: " << root->book.title
+			<< ", Author: " << root->book.author << endl;
+	}
+
+	if (root->book.id < high) {
+		findInRangeBST(root->right, low, high);
+	}
+}
+
+// BST CLOSEST BOOK
+void findClosestBST(Node* root, int target, Node*& closest) {
+
+	if (root == nullptr) return;
+
+	if (abs(root->book.id - target) < abs(closest->book.id - target)) {
+		closest = root;
+	}
+
+	if (target < root->book.id) {
+		findClosestBST(root->left, target, closest);
+	}
+	else if (target > root->book.id) {
+		findClosestBST(root->right, target, closest);
+	}
+}
+
+
+// ======================================================
+// AVL SECTION
+// ======================================================
 
 // AVL Tree Node structure
 struct AVLNode
@@ -198,71 +253,71 @@ AVLNode* leftRotate(AVLNode* A)
 AVLNode* leftRightRotate(AVLNode* A)
 {
 	// Reading the nodes involved in the rotation
-	AVLNode* B = A->left;  // B is the left child of A, which will become the new root of this subtree
-	AVLNode* C = B->right; // C is the right child of B, which will become the left child of A after the first rotation
+	AVLNode* B = A->left;  // B is the left child of A
+	AVLNode* C = B->right; // C is the right child of B
 
 	// First, perform a left rotation on B to bring C up
-	B->right = C->left; // C's left child becomes B's right child
-	C->left = B;        // C becomes the new root of this subtree, with B as its left child
+	B->right = C->left;
+	C->left = B;
 
 	// Then, perform a right rotation on A to bring C up
-	A->left = C->right; // C's right child becomes A's left child
-	C->right = A;       // C becomes the new root of this subtree, with A as its right child
+	A->left = C->right;
+	C->right = A;
 
 	// Update heights after rotations
 	A->height = 1 + max(height(A->left), height(A->right));
 	B->height = 1 + max(height(B->left), height(B->right));
 	C->height = 1 + max(height(C->left), height(C->right));
 
-	return C; // C is the new root of this subtree after the rotations
+	return C;
 }
 
 // RL Rotation for RL imbalance
 AVLNode* rightLeftRotate(AVLNode* A)
 {
 	// Reading the nodes involved in the rotation
-	AVLNode* B = A->right; // B is the right child of A,
-	AVLNode* C = B->left;  // C is the left child of B, which will become the right child of A after the first rotation
+	AVLNode* B = A->right;
+	AVLNode* C = B->left;
 
 	// First, perform a right rotation on B to bring C up
-	B->left = C->right; // C's right child becomes B's left child
-	C->right = B;       // C becomes the new root of this subtree, with B as its right child
+	B->left = C->right;
+	C->right = B;
 
 	// Then, perform a left rotation on A to bring C up
-	A->right = C->left; // C's left child becomes A's right child
-	C->left = A;        // C becomes the new root of this subtree, with A
+	A->right = C->left;
+	C->left = A;
 
 	// Update heights after rotations
 	A->height = 1 + max(height(A->left), height(A->right));
 	B->height = 1 + max(height(B->left), height(B->right));
 	C->height = 1 + max(height(C->left), height(C->right));
 
-	return C; // C is the new root of this subtree after the rotations
+	return C;
 }
 
-// Insert a book into the AVL tree and balance it
-AVLNode* insertAVL(AVLNode* node, Book book)
+// AVL INSERT
+AVLNode* insert(AVLNode* node, Book book)
 {
 	if (!node)
-		return new AVLNode(book); // If the node is null, create a new node with the book
+		return new AVLNode(book);
 
 	if (book.id < node->book.id)
 	{
-		node->left = insertAVL(node->left, book);
+		node->left = insert(node->left, book);
 	}
 	else if (book.id > node->book.id)
 	{
-		node->right = insertAVL(node->right, book);
+		node->right = insert(node->right, book);
 	}
 	else
 	{
-		return node; // Duplicate IDs are not allowed, return the existing node
+		return node;
 	}
 
 	// Update height of this ancestor node
 	node->height = 1 + max(height(node->left), height(node->right));
 
-	// Get the balance factor to check whether this node became unbalanced
+	// Get the balance factor
 	int balance = getBalance(node);
 
 	// LL Case
@@ -292,7 +347,7 @@ AVLNode* insertAVL(AVLNode* node, Book book)
 	return node;
 }
 
-// Node with two children: Get the inorder successor (smallest in the right subtree)
+// Node with two children: Get the inorder successor
 AVLNode* minValueNode(AVLNode* node)
 {
 	AVLNode* current = node;
@@ -305,7 +360,7 @@ AVLNode* minValueNode(AVLNode* node)
 	return current;
 }
 
-// Delete a book from the AVL tree and balance it
+// AVL DELETE
 AVLNode* deleteNode(AVLNode* node, int id)
 {
 	if (!node)
@@ -321,6 +376,7 @@ AVLNode* deleteNode(AVLNode* node, int id)
 	}
 	else
 	{
+		// Node with only one child or no child
 		if (!node->left || !node->right)
 		{
 			AVLNode* temp = node->left ? node->left : node->right;
@@ -350,6 +406,7 @@ AVLNode* deleteNode(AVLNode* node, int id)
 	if (!node)
 		return node;
 
+	// Update height
 	node->height = 1 + max(height(node->left), height(node->right));
 
 	int balance = getBalance(node);
@@ -381,8 +438,8 @@ AVLNode* deleteNode(AVLNode* node, int id)
 	return node;
 }
 
-// Search for a book by ID
-AVLNode* searchAVL(AVLNode* node, int id, int& steps)
+// AVL SEARCH
+AVLNode* search(AVLNode* node, int id, int& steps)
 {
 	if (!node)
 		return nullptr;
@@ -393,12 +450,13 @@ AVLNode* searchAVL(AVLNode* node, int id, int& steps)
 		return node;
 
 	if (id < node->book.id)
-		return searchAVL(node->left, id, steps);
+		return search(node->left, id, steps);
+
 	else
-		return searchAVL(node->right, id, steps);
+		return search(node->right, id, steps);
 }
 
-// Inorder traversal to display books in sorted order
+// AVL INORDER
 void inorder(AVLNode* node)
 {
 	if (node)
@@ -411,4 +469,320 @@ void inorder(AVLNode* node)
 
 		inorder(node->right);
 	}
+}
+
+// AVL RANGE SEARCH
+void findInRange(AVLNode* node, int low, int high)
+{
+	if (!node)
+		return;
+
+	if (node->book.id > low)
+	{
+		findInRange(node->left, low, high);
+	}
+
+	if (node->book.id >= low && node->book.id <= high)
+	{
+		cout << "ID: " << node->book.id
+			<< ", Title: " << node->book.title
+			<< ", Author: " << node->book.author << endl;
+	}
+
+	if (node->book.id < high)
+	{
+		findInRange(node->right, low, high);
+	}
+}
+
+// AVL CLOSEST BOOK
+void findClosest(AVLNode* node, int target, AVLNode*& closest)
+{
+	if (!node)
+		return;
+
+	if (abs(node->book.id - target) < abs(closest->book.id - target))
+	{
+		closest = node;
+	}
+
+	if (node->book.id == target)
+		return;
+
+	if (target < node->book.id)
+	{
+		findClosest(node->left, target, closest);
+	}
+	else
+	{
+		findClosest(node->right, target, closest);
+	}
+}
+
+
+// ======================================================
+// MAIN FUNCTION
+// ======================================================
+
+int main() {
+
+	// ======================================================
+	// RANDOM INSERTION CASE
+	// ======================================================
+
+	cout << "=====================================================" << endl;
+	cout << "RANDOM INSERTION CASE" << endl;
+	cout << "=====================================================" << endl;
+
+	// BST Root
+	Node* bstRoot = nullptr;
+
+	// AVL Root
+	AVLNode* avlRoot = nullptr;
+
+	// 20+ Random Books
+	vector<Book> randomBooks = {
+		{42, "Harry Potter", "J.K Rowling"},
+		{7, "Atomic Habits", "James Clear"},
+		{68, "Clean Code", "Robert Martin"},
+		{15, "The Hobbit", "Tolkien"},
+		{90, "1984", "George Orwell"},
+		{3, "To Kill a Mockingbird", "Harper Lee"},
+		{55, "Wuthering Heights", "Emily Bronte"},
+		{23, "Brave New World", "Aldous Huxley"},
+		{81, "The Road", "Cormac McCarthy"},
+		{12, "Never Let Me Go", "Kazuo Ishiguro"},
+		{37, "Atonement", "Ian McEwan"},
+		{64, "Catch-22", "Joseph Heller"},
+		{29, "Frankenstein", "Mary Shelley"},
+		{99, "The Count of Monte Cristo", "Alexandre Dumas"},
+		{5, "A Tale of Two Cities", "Charles Dickens"},
+		{18, "The Rules of Life", "Richard Templar"},
+		{73, "Pride and Prejudice", "Jane Austen"},
+		{41, "War and Peace", "Leo Tolstoy"},
+		{60, "Animal Farm", "George Orwell"},
+		{8, "The Lord of the Rings", "J.R.R. Tolkien"}
+	};
+
+	// Insert into BST and AVL
+	for (auto& b : randomBooks) {
+
+		// BST insert
+		bstRoot = insert(bstRoot, b);
+
+		// AVL insert
+		avlRoot = insert(avlRoot, b);
+	}
+
+	// ======================================================
+	// BST TESTING
+	// ======================================================
+
+	cout << "\n---------------- BST Inorder Traversal ----------------\n" << endl;
+	inOrder(bstRoot);
+
+	// BST Search
+	int bstSteps = 0;
+
+	cout << "\n---------------- BST Search ----------------\n" << endl;
+
+	Node* bstSearch = search(bstRoot, 73, bstSteps);
+
+	if (bstSearch) {
+		cout << "Book Found: " << bstSearch->book.title << endl;
+	}
+	else {
+		cout << "Book not found" << endl;
+	}
+
+	cout << "BST Search Steps: " << bstSteps << endl;
+
+	// BST Delete
+	cout << "\n---------------- BST Delete ID 15 ----------------\n" << endl;
+
+	bstRoot = deleteFunc(bstRoot, 15);
+
+	inOrder(bstRoot);
+
+	// BST Height
+	cout << "\nBST Height: " << heightBST(bstRoot) << endl;
+
+	// BST Range Search
+	cout << "\n---------------- BST Books in Range [20 - 70] ----------------\n" << endl;
+
+	findInRangeBST(bstRoot, 20, 70);
+
+	// BST Closest Book
+	cout << "\n---------------- BST Closest Book ----------------\n" << endl;
+
+	Node* bstClosest = bstRoot;
+
+	findClosestBST(bstRoot, 50, bstClosest);
+
+	cout << "Closest Book To ID 50:" << endl;
+
+	cout << "ID: " << bstClosest->book.id
+		<< ", Title: " << bstClosest->book.title
+		<< ", Author: " << bstClosest->book.author << endl;
+
+	// ======================================================
+	// AVL TESTING
+	// ======================================================
+
+	cout << "\n\n---------------- AVL Inorder Traversal ----------------\n" << endl;
+
+	inorder(avlRoot);
+
+	// AVL Search
+	int avlSteps = 0;
+
+	cout << "\n---------------- AVL Search ----------------\n" << endl;
+
+	AVLNode* avlSearch = search(avlRoot, 73, avlSteps);
+
+	if (avlSearch) {
+		cout << "Book Found: " << avlSearch->book.title << endl;
+	}
+	else {
+		cout << "Book not found" << endl;
+	}
+
+	cout << "AVL Search Steps: " << avlSteps << endl;
+
+	// AVL Delete
+	cout << "\n---------------- AVL Delete ID 15 ----------------\n" << endl;
+
+	avlRoot = deleteNode(avlRoot, 15);
+
+	inorder(avlRoot);
+
+	// AVL Height
+	cout << "\nAVL Height: " << height(avlRoot) << endl;
+
+	// AVL RANGE SEARCH
+	cout << "\n---------------- AVL Books in Range [20 - 70] ----------------\n" << endl;
+
+	findInRange(avlRoot, 20, 70);
+
+	// AVL CLOSEST BOOK ID
+	cout << "\n---------------- AVL Closest Book ----------------\n" << endl;
+
+	AVLNode* closest = avlRoot;
+
+	findClosest(avlRoot, 50, closest);
+
+	cout << "Closest Book To ID 50:" << endl;
+
+	cout << "ID: " << closest->book.id
+		<< ", Title: " << closest->book.title
+		<< ", Author: " << closest->book.author << endl;
+
+	// ======================================================
+	// RANDOM INSERTION COMPARISON
+	// ======================================================
+
+	cout << "\n\n=====================================================" << endl;
+	cout << "COMPARISON : RANDOM INSERTION" << endl;
+	cout << "=====================================================" << endl;
+
+	cout << "BST Height: " << heightBST(bstRoot) << endl;
+	cout << "AVL Height: " << height(avlRoot) << endl;
+
+	cout << "BST Search Steps: " << bstSteps << endl;
+	cout << "AVL Search Steps: " << avlSteps << endl;
+
+	// ======================================================
+	// SORTED INSERTION CASE
+	// ======================================================
+
+	cout << "\n\n=====================================================" << endl;
+	cout << "SORTED INSERTION CASE" << endl;
+	cout << "=====================================================" << endl;
+
+	// BST Root
+	Node* sortedBST = nullptr;
+
+	// AVL Root
+	AVLNode* sortedAVL = nullptr;
+
+	// Sorted Books
+	vector<Book> sortedBooks = {
+		{1, "Book1", "Author1"},
+		{2, "Book2", "Author2"},
+		{3, "Book3", "Author3"},
+		{4, "Book4", "Author4"},
+		{5, "Book5", "Author5"},
+		{6, "Book6", "Author6"},
+		{7, "Book7", "Author7"},
+		{8, "Book8", "Author8"},
+		{9, "Book9", "Author9"},
+		{10, "Book10", "Author10"},
+		{11, "Book11", "Author11"},
+		{12, "Book12", "Author12"},
+		{13, "Book13", "Author13"},
+		{14, "Book14", "Author14"},
+		{15, "Book15", "Author15"},
+		{16, "Book16", "Author16"},
+		{17, "Book17", "Author17"},
+		{18, "Book18", "Author18"},
+		{19, "Book19", "Author19"},
+		{20, "Book20", "Author20"}
+	};
+
+	// Insert into BST and AVL
+	for (auto& b : sortedBooks) {
+
+		// BST insert
+		sortedBST = insert(sortedBST, b);
+
+		// AVL insert
+		sortedAVL = insert(sortedAVL, b);
+	}
+
+	// ======================================================
+	// SEARCH COMPARISON
+	// ======================================================
+
+	int bstSortedSteps = 0;
+	int avlSortedSteps = 0;
+
+	Node* bstSortedSearch = search(sortedBST, 20, bstSortedSteps);
+
+	AVLNode* avlSortedSearch = search(sortedAVL, 20, avlSortedSteps);
+
+	// ======================================================
+	// HEIGHT + STEPS COMPARISON
+	// ======================================================
+
+	cout << "\n---------------- HEIGHT COMPARISON ----------------\n" << endl;
+
+	cout << "BST Height (Sorted Insertions): "
+		<< heightBST(sortedBST) << endl;
+
+	cout << "AVL Height (Sorted Insertions): "
+		<< height(sortedAVL) << endl;
+
+	cout << "\n---------------- SEARCH STEPS COMPARISON ----------------\n" << endl;
+
+	cout << "BST Search Steps: "
+		<< bstSortedSteps << endl;
+
+	cout << "AVL Search Steps: "
+		<< avlSortedSteps << endl;
+
+	// ======================================================
+	// FINAL CONCLUSION
+	// ======================================================
+
+	cout << "\n\n=====================================================" << endl;
+	cout << "FINAL OBSERVATION" << endl;
+	cout << "=====================================================" << endl;
+
+	cout << "BST becomes taller with sorted insertions because" << endl;
+	cout << "it behaves like a linked list." << endl;
+
+	cout << "\nAVL tree stays balanced using rotations," << endl;
+	cout << "so searching becomes faster and requires fewer steps." << endl;
+
+	return 0;
 }
